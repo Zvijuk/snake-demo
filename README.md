@@ -32,9 +32,13 @@ Edit `js/game.js` to change settings found at the top of the file:
 
 ```javascript
 const CONFIG = {
-    speed: 100,          // Snake speed (lower = faster)
-    snakeColor: '#4CAF50', // Change snake color
-    softResetInterval: 10 * 60 * 1000, // Reset timer (10 mins)
+    speed: 90,           // Snake speed (lower = faster)
+    snakeColor: '#00bcd4', // Coinis Cyan
+    
+    // Coinis Reveal Mode
+    targetLength: 20,    // Snake length to trigger "COINIS" reveal
+    revealWord: "COINIS", // The word to display
+    revealDuration: 3000, // Duration in ms
     
     // Demo Messages
     messages: [

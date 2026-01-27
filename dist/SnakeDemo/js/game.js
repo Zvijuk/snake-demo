@@ -12,6 +12,11 @@ const CONFIG = {
     softResetInterval: 10 * 60 * 1000,
     restartDelay: 2500,
 
+    // Coinis Reveal Mode
+    targetLength: 20, // Length to trigger reveal
+    revealWord: "COINIS",
+    revealDuration: 3000,
+
     // Display
     // We don't use a solid bg anymore, we clearRect
     snakeColor: '#00bcd4', // Cyan
@@ -39,6 +44,8 @@ const scoreEl = document.getElementById('score-val');
 const clockEl = document.getElementById('clock');
 const msgContainer = document.getElementById('demo-message-container');
 const msgText = document.getElementById('demo-message-text');
+const revealOverlay = document.getElementById('overlay-reveal');
+const revealWordEl = document.getElementById('reveal-word');
 
 let cols, rows;
 let snake = [];
@@ -46,6 +53,7 @@ let dir = { x: 1, y: 0 };
 let food = null;
 let score = 0;
 let isGameOver = false;
+let isRevealMode = false;
 
 // Timers
 let lastTime = 0;
@@ -91,8 +99,15 @@ function clampToGrid(pos) {
 
 function resetGame() {
     isGameOver = false;
+    isRevealMode = false;
     score = 0;
     updateScore();
+
+    // Hide reveal just in case
+    if (revealOverlay) {
+        revealOverlay.classList.remove('active');
+        revealOverlay.classList.add('fade-out');
+    }
 
     const startX = Math.floor(cols / 2);
     const startY = Math.floor(rows / 2);
@@ -111,7 +126,8 @@ function loop(timestamp) {
     const deltaTime = timestamp - lastTime;
     lastTime = timestamp;
 
-    if (!isGameOver) {
+    // Only update if Playing (Not Dead AND Not Revealing)
+    if (!isGameOver && !isRevealMode) {
         accumulator += deltaTime;
         if (accumulator >= CONFIG.speed) {
             update();
@@ -181,12 +197,45 @@ function update() {
     }
 
     snake.unshift(head);
+
+    // Check Food
     if (head.x === food.x && head.y === food.y) {
-        score++;
+        score++; // Score tracks food eaten
         updateScore();
-        spawnFood();
+
+        // Check Win Condition (Target Length)
+        // Snake length is now score + initial_length (4). 
+        // Simplest to check current array length.
+        if (snake.length >= CONFIG.targetLength) {
+            triggerReveal();
+        } else {
+            spawnFood();
+        }
     } else {
         snake.pop();
+    }
+}
+
+function triggerReveal() {
+    isRevealMode = true;
+
+    // Update Reveal Text (in case config changed)
+    if (revealWordEl) revealWordEl.innerText = CONFIG.revealWord;
+
+    // Show Overlay
+    if (revealOverlay) {
+        revealOverlay.classList.remove('fade-out');
+        revealOverlay.classList.add('active');
+
+        // Wait then Reset
+        setTimeout(() => {
+            revealOverlay.classList.remove('active');
+            revealOverlay.classList.add('fade-out');
+            resetGame();
+        }, CONFIG.revealDuration);
+    } else {
+        // Fallback if overlay missing
+        resetGame();
     }
 }
 

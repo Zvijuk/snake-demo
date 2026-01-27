@@ -183,3 +183,39 @@ canvas {
     opacity: 0 !important;
     transform: translateY(10px) !important;
 }
+/* Reveal Overlay */
+.overlay-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    pointer-events: none;
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.reveal-text {
+    font-size: 80px;
+    font-weight: 800;
+    color: #00bcd4; /* Coinis Cyan */
+    text-shadow: 0 0 30px rgba(0, 188, 212, 0.6), 0 0 60px rgba(0, 188, 212, 0.3);
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    
+    transform: scale(0.8);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.overlay-center.active {
+    opacity: 1;
+}
+
+.overlay-center.active .reveal-text {
+    transform: scale(1.2);
+}

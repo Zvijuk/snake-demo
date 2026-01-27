@@ -1,49 +1,28 @@
-MagicINFO Snake Custom App - URL Installation
+MagicINFO Snake Custom App - URL Installation (Fix for 404 Error)
 
-If USB installation fails, you can install the app by hosting the files on a web server (local or public) and pointing the TV to it.
+The log "GET /SnakeDemo.wgt/sssp_config.xml 404" suggests the TV is treating the file URL as a folder.
+This often happens if the URL has a trailing "/" or if the TV strictly requires the XML manifest.
 
-FILES NEEDED:
-- SnakeDemo.wgt
-- sssp_config.xml  (Optional, but good for "folder" updates)
+NEW INSTRUCTIONS:
 
---------------------------------------------------------------------------------
-STEP 1: HOST THE FILES
---------------------------------------------------------------------------------
-You need a web server accessible by the TV.
+1. Host the "remote_install" folder (Python server is fine).
+   python3 -m http.server 8000
 
-OPTION A: Local Laptop (Same WiFi/Network as TV)
-1. Install Python (if not installed).
-2. Open Terminal/Command Prompt in this "remote_install" folder.
-3. Run: python3 -m http.server 8000
-   (This hosts the files at http://YOUR_LAPTOP_IP:8000)
+2. On the TV (URL Launcher), enter the URL pointing to the **XML FILE**, not the .wgt file.
 
-OPTION B: Public Web Space
-1. Upload "SnakeDemo.wgt" to any web host (your website, AWS S3, GitHub Pages releases, or a tool like ngrok).
-2. Get the Direct Link to the .wgt file.
+   URL to enter:
+   http://192.168.210.138:8000/sssp_config.xml
+
+   (Replace 192.168.210.138 with your actual Laptop IP if different).
+
+WHY?
+- The "sssp_config.xml" tells the TV exactly what file to download ("SnakeDemo.wgt").
+- This avoids the "is it a file or folder?" confusion.
 
 --------------------------------------------------------------------------------
-STEP 2: INSTALL ON SAMSUNG TV
+VERIFY FILE STRUCTURE
 --------------------------------------------------------------------------------
-1. Turn on the Display.
-2. Press [MENU] -> [System] -> [Play via] -> Select "URL Launcher".
-3. Press [HOME] -> Go to [URL Launcher].
-4. Open [Settings] (top right usually) or select [Install Web App].
-5. Enter the URL:
-   
-   If using Option A (Local Python):
-   http://192.168.1.50:8000/SnakeDemo.wgt
-   (Replace 192.168.1.50 with your laptop's actual IP address).
-
-   If using Option B (Direct Link):
-   http://example.com/SnakeDemo.wgt
-
-6. Press [Done] / [Ok].
-7. The TV should download "SnakeDemo.wgt" and install it.
-
---------------------------------------------------------------------------------
-TROUBLESHOOTING
---------------------------------------------------------------------------------
-- Ensure the Laptop and TV are on the SAME network.
-- Ensure your specific Firewall allows incoming connections to port 8000.
-- If the TV asks for "SSSP config", point the URL to the FOLDER instead of the file:
-  http://192.168.1.50:8000/
+Ensure your folder has both files next to each other:
+remote_install/
+  |-- sssp_config.xml
+  |-- SnakeDemo.wgt
