@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Coinis Snake Demo</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <!-- Background Elements (e.g. gradients/glows) -->
+    <div class="bg-glow"></div>
+
+    <!-- Main Game Wrapper (Centered Glass Panel) -->
+    <div id="game-wrapper">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <!-- Overlays -->
+    <!-- Top Left: Brand Badge -->
+    <div id="overlay-top-left" class="overlay glass-panel-sm">
+        <div class="brand">COINIS <span class="sub-brand">Snake Demo</span></div>
+    </div>
+
+    <!-- Top Right: Score -->
+    <div id="overlay-top-right" class="overlay glass-panel-sm">
+        <div class="score-label">SCORE</div>
+        <div class="score-value" id="score-val">0</div>
+    </div>
+
+    <!-- Bottom Right: Clock -->
+    <div id="overlay-bottom-right" class="overlay">
+        <div id="clock">12:00</div>
+    </div>
+
+    <!-- Bottom Left: Demo Messages -->
+    <div id="demo-message-container" class="overlay glass-panel-msg fade-out">
+        <span id="demo-message-text"></span>
+    </div>
+
+    <script src="js/game.js"></script>
+</body>
+
+</html>
