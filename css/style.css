@@ -403,34 +403,37 @@ canvas {
     height: 100%;
     overflow: hidden;
     position: relative;
-    /* Mask edges for smooth fade? Optional */
-    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    /* Removed mask-image for better TV compatibility (older Tizen/Webkit might hide content) */
 }
 
 .gallery-track {
     display: flex;
     height: 100%;
-    /* Width will be dynamic or huge */
+    /* Ensure track has width to accommodate children */
+    width: max-content;
     /* Animate this track */
     animation: scroll-left 90s linear infinite;
-    /* 20s per cycle, adjust based on content width logic */
+    -webkit-animation: scroll-left 90s linear infinite;
 }
 
 /* Adjust image styling for the strip */
 .gallery-track .gallery-image {
-    width: auto;
-    /* Allow natural aspect ratio? Or fixed width */
     height: 100%;
+    width: auto;
+    /* Explicit min-width to prevent collapse */
+    min-width: 600px;
+
     position: relative;
-    /* Not absolute anymore */
     opacity: 1;
-    /* Always visible */
     margin-right: 20px;
-    /* Gap between images */
     flex-shrink: 0;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+    /* Hardware acceleration hints */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: transform;
 }
 
 @keyframes scroll-left {
@@ -441,6 +444,14 @@ canvas {
     100% {
         transform: translateX(-50%);
     }
+}
 
-    /* Move by 50% because we will double the content */
+@-webkit-keyframes scroll-left {
+    0% {
+        -webkit-transform: translateX(0);
+    }
+
+    100% {
+        -webkit-transform: translateX(-50%);
+    }
 }

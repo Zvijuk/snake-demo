@@ -189,16 +189,16 @@ function finishDrawing() {
         revealOverlay.classList.add('fade-out');
     }
 
-    // Start Company Values Presentation, then Gallery, then Reset
-    if (typeof Presentation !== 'undefined' && typeof Gallery !== 'undefined') {
-        Presentation.start(() => {
-            Gallery.start(resetGame);
-        });
-    } else {
-        setTimeout(() => {
+    // Wait for the Logo Reveal duration, THEN start the presentation loop
+    setTimeout(() => {
+        if (typeof Presentation !== 'undefined' && typeof Gallery !== 'undefined') {
+            Presentation.start(() => {
+                Gallery.start(resetGame);
+            });
+        } else {
             resetGame();
-        }, CONFIG.revealDuration);
-    }
+        }
+    }, CONFIG.revealDuration);
 }
 
 function spawnFood() {
