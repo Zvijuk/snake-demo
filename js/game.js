@@ -212,40 +212,6 @@ let logoOpacity = 0;
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw Logo Overlay if Game Over (Finished Drawing)
-    if (isGameOver) {
-        if (logoImg.complete) {
-            // Smooth Fade In
-            if (logoOpacity < 1) {
-                logoOpacity += 0.02; // Approx 50 frames (0.8s) to full fade
-                if (logoOpacity > 1) logoOpacity = 1;
-            }
-
-            const scale = 0.6;
-            const imgW = logoImg.width * scale;
-            const imgH = logoImg.height * scale;
-            const x = (canvas.width - imgW) / 2;
-            const y = (canvas.height - imgH) / 2;
-
-            ctx.save();
-            ctx.globalAlpha = logoOpacity;
-
-            // Draw Glow
-            ctx.shadowColor = 'rgba(0, 188, 212, 0.5)';
-            ctx.shadowBlur = 30;
-
-            ctx.drawImage(logoImg, x, y, imgW, imgH);
-            ctx.restore();
-        }
-    } else {
-        // Reset opacity if not game over
-        logoOpacity = 0;
-    }
-
-    const gs = CONFIG.gridSize;
-    const gap = 2;
-    const size = gs - gap;
-
     // Draw Snake
     ctx.shadowBlur = 15;
     ctx.shadowColor = CONFIG.snakeGlow;
@@ -267,7 +233,7 @@ function draw() {
     }
 
     // Draw Food
-    if (food && !isGameOver) { // Don't draw food if finished
+    if (food && !isGameOver) {
         const fx = food.x * gs + gs / 2;
         const fy = food.y * gs + gs / 2;
         const baseRadius = size / 2.5;
@@ -283,6 +249,35 @@ function draw() {
     }
 
     ctx.shadowBlur = 0;
+
+    // Draw Logo Overlay (Last = On Top)
+    if (isGameOver) {
+        if (logoImg.complete) {
+            // Smooth Fade In
+            if (logoOpacity < 1) {
+                logoOpacity += 0.02;
+                if (logoOpacity > 1) logoOpacity = 1;
+            }
+
+            const scale = 0.6;
+            const imgW = logoImg.width * scale;
+            const imgH = logoImg.height * scale;
+            const x = (canvas.width - imgW) / 2;
+            const y = (canvas.height - imgH) / 2;
+
+            ctx.save();
+            ctx.globalAlpha = logoOpacity;
+
+            // Draw Glow
+            ctx.shadowColor = 'rgba(0, 188, 212, 0.5)';
+            ctx.shadowBlur = 30;
+
+            ctx.drawImage(logoImg, x, y, imgW, imgH);
+            ctx.restore();
+        }
+    } else {
+        logoOpacity = 0;
+    }
 }
 
 function roundedRect(ctx, x, y, width, height, radius) {
