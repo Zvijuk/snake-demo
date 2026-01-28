@@ -219,3 +219,104 @@ canvas {
 .overlay-center.active .reveal-text {
     transform: scale(1.2);
 }
+
+/* Company Values Presentation Overlay */
+.overlay-full {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 200; /* Above everything */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+
+.overlay-full.active {
+    opacity: 1;
+}
+
+.glass-panel-dark {
+    background: rgba(5, 11, 20, 0.85); /* Darker backdrop */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.presentation-content {
+    text-align: center;
+    max-width: 800px;
+    padding: 40px;
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    
+    transform: translateY(20px);
+    transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.overlay-full.active .presentation-content {
+    transform: translateY(0);
+}
+
+.brand-small {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #5c7c99; /* Muted Blue */
+    margin-bottom: 10px;
+}
+
+.value-title {
+    font-size: 72px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 2px;
+    margin: 0;
+    text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+    
+    /* Reveal Animation support? */
+}
+
+.divider-line {
+    width: 80px;
+    height: 4px;
+    background: #00bcd4; /* Cyan */
+    border-radius: 2px;
+    box-shadow: 0 0 15px rgba(0, 188, 212, 0.5);
+}
+
+.value-desc {
+    font-size: 32px;
+    font-weight: 300;
+    line-height: 1.4;
+    color: #e0e6ed;
+    max-width: 90%;
+}
+
+/* Indicators */
+.indicators-container {
+    display: flex;
+    gap: 12px;
+    margin-top: 30px;
+}
+
+.indicator-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.indicator-dot.active {
+    background: #00bcd4;
+    box-shadow: 0 0 10px rgba(0, 188, 212, 0.6);
+    transform: scale(1.2);
+}

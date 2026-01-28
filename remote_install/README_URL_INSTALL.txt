@@ -5,8 +5,7 @@ This often happens if the URL has a trailing "/" or if the TV strictly requires 
 
 NEW INSTRUCTIONS:
 
-1. Host the "remote_install" folder (Python server is fine).
-   python3 -m http.server 8000
+1. Host the "remote_install" folder (Python server is fine)
 
 2. On the TV (URL Launcher), enter the URL pointing to the **XML FILE**, not the .wgt file.
 

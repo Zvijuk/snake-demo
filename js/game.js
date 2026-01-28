@@ -15,7 +15,7 @@ const CONFIG = {
     // Coinis Reveal / Draw Mode
     targetLength: 9999, // Ignored in Draw Mode (length determind by path)
     revealWord: "COINIS", // Text to show
-    revealDuration: 11000, // 1s fade + 10s hold
+    revealDuration: 3000, // 3s hold before Values Presentation
 
     // Display
     snakeColor: '#00bcd4', // Cyan
@@ -189,9 +189,14 @@ function finishDrawing() {
         revealOverlay.classList.add('fade-out');
     }
 
-    setTimeout(() => {
-        resetGame();
-    }, CONFIG.revealDuration);
+    // Start Company Values Presentation instead of immediate reset
+    if (typeof Presentation !== 'undefined') {
+        Presentation.start(resetGame);
+    } else {
+        setTimeout(() => {
+            resetGame();
+        }, CONFIG.revealDuration);
+    }
 }
 
 function spawnFood() {
