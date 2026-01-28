@@ -212,6 +212,10 @@ let logoOpacity = 0;
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    const gs = CONFIG.gridSize;
+    const gap = 2;
+    const size = gs - gap;
+
     // Draw Snake
     ctx.shadowBlur = 15;
     ctx.shadowColor = CONFIG.snakeGlow;
