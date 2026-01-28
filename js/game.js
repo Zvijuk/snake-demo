@@ -182,10 +182,10 @@ function update() {
 function finishDrawing() {
     isGameOver = true;
 
+    // User requested NO text overlay. Just wait and reset.
     if (revealOverlay) {
-        revealWordEl.innerText = CONFIG.revealWord;
-        revealOverlay.classList.remove('fade-out');
-        revealOverlay.classList.add('active');
+        revealOverlay.classList.remove('active');
+        revealOverlay.classList.add('fade-out');
     }
 
     setTimeout(() => {
