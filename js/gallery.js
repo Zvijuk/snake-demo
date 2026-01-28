@@ -5,7 +5,7 @@
 
 const Gallery = {
     // Configuration
-    duration: 90 * 1000,    // 1 Minute 30 Seconds Total
+    duration: 150 * 1000,    // 2 Minutes 30 Seconds Total
 
     // We need enough copies to fill screen + buffer for infinite scroll
     baseImages: [
