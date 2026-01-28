@@ -93,6 +93,7 @@ function resetGame() {
     score = 0;
     updateScore();
     pathIndex = 0;
+    logoOpacity = 0; // Reset fade
 
     // Hide reveal
     if (revealOverlay) {
@@ -205,38 +206,11 @@ function spawnFood() {
 const logoImg = new Image();
 logoImg.src = 'assets/logo-full.png'; // Relative path (Git source of truth)
 
+// Globals for animation
+let logoOpacity = 0;
+
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw Logo Overlay if Game Over (Finished Drawing)
-    if (isGameOver) {
-        // Fade in effect? 
-        // Simple opacity for now or just draw it.
-        // Let's center it.
-        if (logoImg.complete) {
-            const scale = 0.6; // Adjust scale to fit nicely
-            const imgW = logoImg.width * scale;
-            const imgH = logoImg.height * scale;
-            const x = (canvas.width - imgW) / 2;
-            const y = (canvas.height - imgH) / 2;
-
-            ctx.save();
-            ctx.globalAlpha = 1; // Explicit opacity
-            // Optional: Shadow/Glow
-            ctx.shadowColor = 'rgba(0, 188, 212, 0.5)';
-            ctx.shadowBlur = 30;
-            ctx.drawImage(logoImg, x, y, imgW, imgH);
-            ctx.restore();
-            return; // Don't draw snake behind it? Or draw snake AND logo?
-            // User: "Logo must appear... upon drawing completion"
-            // "reset" happens after 3s.
-            // Let's draw logo ON TOP of the snake trace.
-        }
-    }
-
-    const gs = CONFIG.gridSize;
-    const gap = 2;
-    const size = gs - gap;
 
     // Draw Snake
     ctx.shadowBlur = 15;
@@ -259,7 +233,7 @@ function draw() {
     }
 
     // Draw Food
-    if (food && !isGameOver) { // Don't draw food if finished
+    if (food && !isGameOver) {
         const fx = food.x * gs + gs / 2;
         const fy = food.y * gs + gs / 2;
         const baseRadius = size / 2.5;
@@ -275,6 +249,35 @@ function draw() {
     }
 
     ctx.shadowBlur = 0;
+
+    // Draw Logo Overlay (Last = On Top)
+    if (isGameOver) {
+        if (logoImg.complete) {
+            // Smooth Fade In
+            if (logoOpacity < 1) {
+                logoOpacity += 0.02;
+                if (logoOpacity > 1) logoOpacity = 1;
+            }
+
+            const scale = 0.6;
+            const imgW = logoImg.width * scale;
+            const imgH = logoImg.height * scale;
+            const x = (canvas.width - imgW) / 2;
+            const y = (canvas.height - imgH) / 2;
+
+            ctx.save();
+            ctx.globalAlpha = logoOpacity;
+
+            // Draw Glow
+            ctx.shadowColor = 'rgba(0, 188, 212, 0.5)';
+            ctx.shadowBlur = 30;
+
+            ctx.drawImage(logoImg, x, y, imgW, imgH);
+            ctx.restore();
+        }
+    } else {
+        logoOpacity = 0;
+    }
 }
 
 function roundedRect(ctx, x, y, width, height, radius) {
