@@ -1,49 +1,31 @@
-# MagicINFO Snake Custom App
+# MagicINFO Snake Custom App (Draw Mode)
 
-A standalone Tizen Web App designed for Samsung MagicINFO signage. It runs an automated Snake game 24/7 with custom branding and demo messages.
+A standalone Tizen Web App for Samsung displays.
+**Current Mode**: "Logo Draw" - The snake automatically draws the "COINIS" logo.
 
 ## Features
-- **Auto-Player AI**: The snake plays itself indefinitely.
-- **24/7 Stability**: Includes a "soft reset" every 10 minutes to clear memory/state.
-- **Offline Capable**: No internet connection required.
-- **Overlays**:
-  - Top-Left: Branding & Score
-  - Bottom-Right: Local Clock
-  - Bottom-Left: Cycling demo messages
-
-## Deployment (MagicINFO)
-1. **Compress**: Zip the contents of `magicinfo-snake` (ensure `config.xml` and `index.html` are at the root of the zip).
-   - Name it `SnakeDemo.zip`.
-2. **Upload**:
-   - Go to MagicINFO Server > Content > New > Web Application > Custom App (Tizen).
-   - Upload the `.zip` file.
-3. **Schedule**:
-   - Create a playlist/schedule and assign the app to your Samsung display.
-   - Standard Play Duration: Set to "Continuous" or a long duration (e.g., 24h).
-
-## USB Deployment (Alternative)
-1. Create a folder named `SnakeDemo` on a USB drive.
-2. Copy all files (`index.html`, `config.xml`, `css/`, `js/`) into that folder.
-3. Insert USB into the Samsung Display.
-4. Launch the application via the "URL Launcher" or "MagicInfo Player" depending on your model's firmware features, or use the "Install Web App" feature in the Service Menu. (Note: Server deployment is recommended).
+- **Deterministic Drawing**: Follows a predefined coordinate path to spell "COINIS".
+- **Continuous Growth**: Snake grows as it moves, forming a persistent line.
+- **Auto-Loop**: Draws logo -> Holds for 3s -> Resets.
+- **24/7 Stability**: Includes soft reset every 10 mins.
 
 ## Configuration
-Edit `js/game.js` to change settings found at the top of the file:
+Edit `js/game.js`:
 
 ```javascript
 const CONFIG = {
-    speed: 90,           // Snake speed (lower = faster)
+    speed: 60,           // Drawing speed (lower = faster)
     snakeColor: '#00bcd4', // Coinis Cyan
     
-    // Coinis Reveal Mode
-    targetLength: 20,    // Snake length to trigger "COINIS" reveal
-    revealWord: "COINIS", // The word to display
-    revealDuration: 3000, // Duration in ms
+    // Draw Mode
+    revealWord: "COINIS", // Text shown at end
+    revealDuration: 3000, 
     
-    // Demo Messages
-    messages: [
-        "Your Custom Message 1",
-        "Your Custom Message 2"
-    ]
+    // ...
 };
 ```
+
+To change the logo path, edit `js/paths.js` and update `getHardcodedCoinis()`.
+
+## Installation (Git)
+See `README_GIT.txt`.

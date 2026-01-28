@@ -1,27 +1,21 @@
 /**
- * Coinis Snake Demo - Redesign
+ * Coinis Snake Demo - Logo Draw Mode
  * 100% Client-side, Vanilla JS
  */
 
 const CONFIG = {
     // Game Play
-    gridSize: 30, // Smaller grid for cleaner look on large screens
-    speed: 90,    // Slightly faster feel
+    gridSize: 30,
+    speed: 60, // Faster for drawing
 
-    // Mechanics
-    softResetInterval: 10 * 60 * 1000,
-    restartDelay: 2500,
-
-    // Coinis Reveal Mode
-    targetLength: 20, // Length to trigger reveal
-    revealWord: "COINIS",
+    // Coinis Reveal / Draw Mode
+    targetLength: 9999, // Ignored in Draw Mode (length determind by path)
     revealDuration: 3000,
 
     // Display
-    // We don't use a solid bg anymore, we clearRect
     snakeColor: '#00bcd4', // Cyan
     snakeGlow: 'rgba(0, 188, 212, 0.4)',
-    foodColor: '#ff4081',  // Pink/Magenta accent
+    foodColor: '#ff4081',
     foodGlow: 'rgba(255, 64, 129, 0.5)',
 
     // Demo Messages
@@ -49,11 +43,13 @@ const revealWordEl = document.getElementById('reveal-word');
 
 let cols, rows;
 let snake = [];
-let dir = { x: 1, y: 0 };
 let food = null;
 let score = 0;
-let isGameOver = false;
-let isRevealMode = false;
+let isGameOver = false; // "Dead" or "Finished" state
+
+// Draw Mode State
+let drawPath = [];
+let pathIndex = 0;
 
 // Timers
 let lastTime = 0;
@@ -77,48 +73,56 @@ function init() {
 }
 
 function resize() {
-    // Fit canvas to the wrapper provided by CSS
     const rect = wrapper.getBoundingClientRect();
-
-    // Make canvas logical size match visual size for sharpness
-    // (Could handle DPR here for 4K sharpness, but standard 1:1 is usually performant enough for signage)
     canvas.width = rect.width;
     canvas.height = rect.height;
 
     cols = Math.floor(canvas.width / CONFIG.gridSize);
     rows = Math.floor(canvas.height / CONFIG.gridSize);
 
-    // Clamp food/snake if resized
-    if (food) clampToGrid(food);
-}
-
-function clampToGrid(pos) {
-    if (pos.x >= cols) pos.x = cols - 1;
-    if (pos.y >= rows) pos.y = rows - 1;
+    // If resizing mid-draw, path might be skewed, but we rely on grid units so should be ok-ish.
+    // Ideally we regenerate path on resize, but let's stick to simple reset if needed.
 }
 
 function resetGame() {
     isGameOver = false;
-    isRevealMode = false;
     score = 0;
     updateScore();
+    pathIndex = 0;
 
-    // Hide reveal just in case
+    // Hide reveal
     if (revealOverlay) {
         revealOverlay.classList.remove('active');
         revealOverlay.classList.add('fade-out');
     }
 
-    const startX = Math.floor(cols / 2);
-    const startY = Math.floor(rows / 2);
-    snake = [
-        { x: startX, y: startY },
-        { x: startX - 1, y: startY },
-        { x: startX - 2, y: startY },
-        { x: startX - 3, y: startY }
-    ];
-    dir = { x: 1, y: 0 };
-    spawnFood();
+    // Generate Path (Centered)
+    drawPath = PATHS.getHardcodedCoinis();
+
+    // Center the path on the current grid
+    // The hardcoded path is approx 0-30 range. We offset it to center.
+    const pathMinX = 2; const pathMaxX = 28;
+    const pathMinY = 10; const pathMaxY = 18;
+    const pWidth = pathMaxX - pathMinX;
+    const pHeight = pathMaxY - pathMinY;
+
+    const offsetX = Math.floor((cols - pWidth) / 2) - pathMinX;
+    const offsetY = Math.floor((rows - pHeight) / 2) - pathMinY;
+
+    drawPath = drawPath.map(p => ({
+        x: p.x + offsetX,
+        y: p.y + offsetY
+    }));
+
+    // Init Snake at Start of Path
+    if (drawPath.length > 0) {
+        snake = [drawPath[0]];
+        pathIndex = 0;
+        spawnFood(); // Food at next point
+    } else {
+        // Fallback
+        snake = [{ x: 5, y: 5 }];
+    }
 }
 
 function loop(timestamp) {
@@ -126,8 +130,7 @@ function loop(timestamp) {
     const deltaTime = timestamp - lastTime;
     lastTime = timestamp;
 
-    // Only update if Playing (Not Dead AND Not Revealing)
-    if (!isGameOver && !isRevealMode) {
+    if (!isGameOver) {
         accumulator += deltaTime;
         if (accumulator >= CONFIG.speed) {
             update();
@@ -135,143 +138,133 @@ function loop(timestamp) {
         }
     }
 
-    draw(); // Draw every frame for smooth animations (pulse)
+    draw();
     pulseFrame += 0.05;
 
-    if (isGameOver) {
-        // Stop updating but keep drawing dead state? 
-        // Actually we auto-restart.
-    }
-
-    if (!isGameOver || (isGameOver && deltaTime < CONFIG.restartDelay)) {
+    if (isGameOver && deltaTime < 500) { // Just keep loop running
+        requestAnimationFrame(loop);
+    } else {
         requestAnimationFrame(loop);
     }
 }
 
-// AI Logic (Same as before)
-function determineMove() {
-    const head = snake[0];
-    const dx = food.x - head.x;
-    const dy = food.y - head.y;
-
-    let preferredMoves = [];
-    if (dx > 0) preferredMoves.push({ x: 1, y: 0 });
-    else if (dx < 0) preferredMoves.push({ x: -1, y: 0 });
-    if (dy > 0) preferredMoves.push({ x: 0, y: 1 });
-    else if (dy < 0) preferredMoves.push({ x: 0, y: -1 });
-
-    for (let move of preferredMoves) if (isValidMove(move)) return move;
-
-    const allMoves = [{ x: 0, y: -1 }, { x: 0, y: 1 }, { x: -1, y: 0 }, { x: 1, y: 0 }];
-    for (let move of allMoves) if (isValidMove(move)) return move;
-
-    return dir;
-}
-
-function isValidMove(move) {
-    if (move.x === -dir.x && move.y === -dir.y) return false;
-    const targetX = snake[0].x + move.x;
-    const targetY = snake[0].y + move.y;
-
-    if (targetX < 0 || targetX >= cols || targetY < 0 || targetY >= rows) return false;
-    for (let i = 0; i < snake.length - 1; i++) {
-        if (targetX === snake[i].x && targetY === snake[i].y) return false;
-    }
-    return true;
-}
-
 function update() {
-    const nextMove = determineMove();
-    if (nextMove) dir = nextMove;
+    // Logic: Move Head to next point in path
 
-    const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
-
-    // Collision
-    if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows || isSnake(head.x, head.y)) {
-        isGameOver = true;
-        setTimeout(() => {
-            resetGame();
-            requestAnimationFrame(loop);
-        }, CONFIG.restartDelay);
+    // Are we done?
+    if (pathIndex >= drawPath.length - 1) {
+        finishDrawing();
         return;
     }
 
-    snake.unshift(head);
+    // Next point
+    const nextPos = drawPath[pathIndex + 1];
 
-    // Check Food
-    if (head.x === food.x && head.y === food.y) {
-        score++; // Score tracks food eaten
+    // Move Head
+    snake.unshift(nextPos);
+
+    // Check Food (Visual marker for "Work to do")
+    // In this mode, we basically ALWAYS eat?
+    // User said: "Each food eaten advances head... increases visible snake length"
+    // So visualizes: Head moves to food -> Eats -> Spawns new food at next path -> Tail stays (growing)
+
+    // We assume food is AT nextPos.
+    if (nextPos.x === food.x && nextPos.y === food.y) {
+        score++;
         updateScore();
+        pathIndex++;
 
-        // Check Win Condition (Target Length)
-        // Snake length is now score + initial_length (4). 
-        // Simplest to check current array length.
-        if (snake.length >= CONFIG.targetLength) {
-            triggerReveal();
-        } else {
-            spawnFood();
-        }
+        // Spawn next food
+        spawnFood();
+
+        // Don't pop -> Grow infinite
     } else {
-        snake.pop();
+        // This fails if we just unshifted nextPos but food wasn't there. 
+        // But we spawn food at pathIndex+1.
+        // So actually, we just moved to food.
+
+        // If we want the snake to ONLY move when it eats:
+        // Then the "Speed" is the rate of eating.
+        // We technically just did that.
+
+        // Wait, regular snake moves every frame.
+        // If we move every frame, we consume the path quickly.
+        // We should "Grow" every frame then? 
+        // Yes, Drawing Mode = Grow every step.
+        pathIndex++;
+        score++;
+        updateScore();
+        // Since we "ate" the path step, we effectively moved. 
+        // We need to move the food too to look like we are chasing it?
+        spawnFood();
     }
+
+    // No tail popping in Drawing Mode (draws the line)
 }
 
-function triggerReveal() {
-    isRevealMode = true;
+function finishDrawing() {
+    isGameOver = true; // Pauses update
 
-    // Update Reveal Text (in case config changed)
-    if (revealWordEl) revealWordEl.innerText = CONFIG.revealWord;
+    // Show "COINIS" Text Overlay over the drawn shape?
+    // Or just look at the shape? 
+    // User said: "Completion: Hold completed logo... Optional glow"
 
-    // Show Overlay
     if (revealOverlay) {
+        revealWordEl.innerText = ""; // Clear text, maybe show Logo? 
+        // Or just use the overlay to flash "DONE"?
+        // Better: Just let the snake shape shine.
+
+        // Let's flash the overlay text "COINIS" anyway as reinforcement
+        revealWordEl.innerText = CONFIG.revealWord;
         revealOverlay.classList.remove('fade-out');
         revealOverlay.classList.add('active');
-
-        // Wait then Reset
-        setTimeout(() => {
-            revealOverlay.classList.remove('active');
-            revealOverlay.classList.add('fade-out');
-            resetGame();
-        }, CONFIG.revealDuration);
-    } else {
-        // Fallback if overlay missing
-        resetGame();
     }
+
+    setTimeout(() => {
+        resetGame(); // Restart drawing
+    }, CONFIG.revealDuration);
 }
 
-function isSnake(x, y) {
-    for (let p of snake) if (p.x === x && p.y === y) return true;
-    return false;
+function spawnFood() {
+    // In Draw Mode, Food is simply the NEXT point in the path (or a few steps ahead)
+    // To make it look like "Game", let's put food 1 step ahead.
+    if (pathIndex + 1 < drawPath.length) {
+        food = drawPath[pathIndex + 1];
+    } else {
+        food = null; // Done
+    }
 }
 
 function draw() {
-    // Clear logic for Glass:
-    // We actually want a fully transparent canvas to let the glass BG show through.
+    // Clear with transparency
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const gs = CONFIG.gridSize;
-    const gap = 2;
+    const gap = 2; // Tighter gap for continuous draw look? Or same?
     const size = gs - gap;
 
-    // Draw Snake
+    // Draw Snake (The Drawing)
     ctx.shadowBlur = 15;
     ctx.shadowColor = CONFIG.snakeGlow;
     ctx.fillStyle = CONFIG.snakeColor;
+
+    // Optimization: Drawing 1000 rects might be heavy?
+    // Standard snake is fine.
 
     for (let i = 0; i < snake.length; i++) {
         const x = snake[i].x * gs + gap / 2;
         const y = snake[i].y * gs + gap / 2;
 
-        // Head different style? slightly
+        // Head style
         if (i === 0) {
             ctx.shadowBlur = 20;
-            ctx.fillStyle = '#4dd0e1'; // Brighter cyan
+            ctx.fillStyle = '#4dd0e1';
         } else {
             ctx.shadowBlur = 10;
             ctx.fillStyle = CONFIG.snakeColor;
         }
 
-        roundedRect(ctx, x, y, size, size, 6);
+        roundedRect(ctx, x, y, size, size, 4); // Smaller radius for "Blocky" logo feel?
     }
 
     // Draw Food
@@ -279,7 +272,6 @@ function draw() {
         const fx = food.x * gs + gs / 2;
         const fy = food.y * gs + gs / 2;
         const baseRadius = size / 2.5;
-        // Pulse effect
         const pulse = Math.sin(pulseFrame) * 2;
 
         ctx.shadowBlur = 20;
@@ -291,10 +283,10 @@ function draw() {
         ctx.fill();
     }
 
-    // Reset shadow for next frame transparency
     ctx.shadowBlur = 0;
 }
 
+// Helpers
 function roundedRect(ctx, x, y, width, height, radius) {
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
@@ -310,20 +302,8 @@ function roundedRect(ctx, x, y, width, height, radius) {
     ctx.fill();
 }
 
-function spawnFood() {
-    let valid = false;
-    while (!valid) {
-        const x = Math.floor(Math.random() * cols);
-        const y = Math.floor(Math.random() * rows);
-        if (!isSnake(x, y)) {
-            food = { x, y };
-            valid = true;
-        }
-    }
-}
-
 function updateScore() {
-    scoreEl.innerText = score;
+    scoreEl.innerText = score; // "Length"
 }
 
 function startClock() {
