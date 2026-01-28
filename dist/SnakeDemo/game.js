@@ -305,7 +305,43 @@ function startClock() {
     setInterval(tick, 1000);
 }
 
+// Live Data Fetcher
+async function fetchIndustryData() {
+    try {
+        // Neil Patel's Affiliate Marketing Feed (Public)
+        const RSS_URL = 'https://neilpatel.com/blog/category/affiliate-marketing/feed/';
+        const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_URL)}`;
+
+        const response = await fetch(API_URL);
+        const data = await response.json();
+
+        if (data && data.items && data.items.length > 0) {
+            // Update messages with headlines
+            const headlines = data.items.map(item => `NEWS • ${item.title}`);
+
+            // Mix with default branding or replace?
+            // User asked for "industry shot informations", let's prioritize them.
+            // We keep one branding message and loop the news.
+            CONFIG.messages = [
+                "COINIS • Connecting advertisers & publishers",
+                ...headlines
+            ];
+
+            console.log("Live data updated:", headlines.length, "headlines");
+        }
+    } catch (e) {
+        console.warn("Live data fetch failed (Offline?), using defaults.", e);
+        // Fallback is already loaded in CONFIG.messages
+    }
+}
+
 function startDemoMessages() {
+    // Initial Fetch
+    fetchIndustryData();
+
+    // Refresh every hour
+    setInterval(fetchIndustryData, 60 * 60 * 1000);
+
     function cycle() {
         msgText.innerText = CONFIG.messages[currentMsgIndex];
         msgContainer.classList.remove('fade-out');
