@@ -15,7 +15,7 @@ const CONFIG = {
     // Coinis Reveal / Draw Mode
     targetLength: 9999, // Ignored in Draw Mode (length determind by path)
     revealWord: "COINIS", // Text to show
-    revealDuration: 4000, // 1s fade + 3s hold
+    revealDuration: 11000, // 1s fade + 10s hold
 
     // Display
     snakeColor: '#00bcd4', // Cyan
