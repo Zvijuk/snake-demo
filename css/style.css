@@ -412,8 +412,8 @@ canvas {
     /* Ensure track has width to accommodate children */
     width: max-content;
     /* Animate this track */
-    animation: scroll-left 90s linear infinite;
-    -webkit-animation: scroll-left 90s linear infinite;
+    animation: scroll-left 180s linear infinite;
+    -webkit-animation: scroll-left 180s linear infinite;
 }
 
 /* Adjust image styling for the strip */
