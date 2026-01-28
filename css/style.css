@@ -413,7 +413,7 @@ canvas {
     height: 100%;
     /* Width will be dynamic or huge */
     /* Animate this track */
-    animation: scroll-left 45s linear infinite;
+    animation: scroll-left 90s linear infinite;
     /* 20s per cycle, adjust based on content width logic */
 }
 
