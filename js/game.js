@@ -307,31 +307,58 @@ function startClock() {
 
 // Live Data Fetcher
 async function fetchIndustryData() {
-    try {
-        // Neil Patel's Affiliate Marketing Feed (Public)
-        const RSS_URL = 'https://neilpatel.com/blog/category/affiliate-marketing/feed/';
-        const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_URL)}`;
+    const backupNews = [
+        "NEWS • Global Affiliate Spend hits $17B in 2025",
+        "NEWS • AI Tools revolutionizing affiliate campaigns",
+        "NEWS • Influencer Marketing merges with Performance",
+        "NEWS • Mobile-first tracking becomes standard",
+        "NEWS • 5 Trends shaping Affiliate Marketing in 2026"
+    ];
 
-        const response = await fetch(API_URL);
-        const data = await response.json();
+    const feeds = [
+        // Neil Patel
+        'https://neilpatel.com/blog/category/affiliate-marketing/feed/',
+        // Marketing Land
+        'https://marketingland.com/feed',
+        // Search Engine Journal
+        'https://www.searchenginejournal.com/feed/'
+    ];
 
-        if (data && data.items && data.items.length > 0) {
-            // Update messages with headlines
-            const headlines = data.items.map(item => `NEWS • ${item.title}`);
+    let success = false;
 
-            // Mix with default branding or replace?
-            // User asked for "industry shot informations", let's prioritize them.
-            // We keep one branding message and loop the news.
-            CONFIG.messages = [
-                "COINIS • Connecting advertisers & publishers",
-                ...headlines
-            ];
+    // Try feeds sequentially
+    for (let rss of feeds) {
+        try {
+            const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss)}`;
+            const response = await fetch(API_URL);
+            if (!response.ok) throw new Error('API Error');
 
-            console.log("Live data updated:", headlines.length, "headlines");
+            const data = await response.json();
+
+            if (data && data.items && data.items.length > 0) {
+                // Limit to 5 headlines to keep loop tight
+                const headlines = data.items.slice(0, 5).map(item => `NEWS • ${item.title}`);
+
+                CONFIG.messages = [
+                    "COINIS • Connecting advertisers & publishers",
+                    ...headlines
+                ];
+                console.log("Live data updated from:", rss);
+                success = true;
+                break; // Stop if one works
+            }
+        } catch (e) {
+            console.warn(`Feed failed: ${rss}`, e);
         }
-    } catch (e) {
-        console.warn("Live data fetch failed (Offline?), using defaults.", e);
-        // Fallback is already loaded in CONFIG.messages
+    }
+
+    // If all failed, use Backup "Simulated" Data
+    if (!success) {
+        console.warn("All feeds failed. Using simulated live data.");
+        CONFIG.messages = [
+            "COINIS • Connecting advertisers & publishers",
+            ...backupNews
+        ];
     }
 }
 
