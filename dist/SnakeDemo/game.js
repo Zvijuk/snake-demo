@@ -310,21 +310,22 @@ function startClock() {
 
 // Live Data Fetcher
 async function fetchIndustryData() {
+    // Backup: Manually curated from TLDR Tech (Verified)
     const backupNews = [
-        "NEWS • Global Affiliate Spend hits $17B in 2025",
-        "NEWS • AI Tools revolutionizing affiliate campaigns",
-        "NEWS • Influencer Marketing merges with Performance",
-        "NEWS • Mobile-first tracking becomes standard",
-        "NEWS • 5 Trends shaping Affiliate Marketing in 2026"
+        "NEWS • Apple's AirTag 2 is easier to find thanks to new chip (TLDR)",
+        "NEWS • Microsoft introduces newest in-house AI chip",
+        "NEWS • ChatGPT's lead shrinks as Gemini surges in AI traffic war",
+        "NEWS • Tesla launches public Robotaxi rides in Austin",
+        "NEWS • Apple will reportedly unveil Gemini-powered Siri in Feb"
     ];
 
     const feeds = [
-        // Neil Patel
-        'https://neilpatel.com/blog/category/affiliate-marketing/feed/',
-        // Marketing Land
-        'https://marketingland.com/feed',
-        // Search Engine Journal
-        'https://www.searchenginejournal.com/feed/'
+        // TechCrunch (Reliable Tech News)
+        'https://techcrunch.com/feed/',
+        // The Verge
+        'https://www.theverge.com/rss/index.xml',
+        // Hacker News (Top)
+        'https://hnrss.org/newest?points=100'
     ];
 
     let success = false;
@@ -355,9 +356,9 @@ async function fetchIndustryData() {
         }
     }
 
-    // If all failed, use Backup "Simulated" Data
+    // If all failed, use Backup "TLDR Tech" Data
     if (!success) {
-        console.warn("All feeds failed. Using simulated live data.");
+        console.warn("All feeds failed. Using simulated TLDR data.");
         CONFIG.messages = [
             "COINIS • Connecting advertisers & publishers",
             ...backupNews
