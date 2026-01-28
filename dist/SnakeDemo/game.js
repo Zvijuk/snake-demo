@@ -15,7 +15,7 @@ const CONFIG = {
     // Coinis Reveal / Draw Mode
     targetLength: 9999, // Ignored in Draw Mode (length determind by path)
     revealWord: "COINIS", // Text to show
-    revealDuration: 3000,
+    revealDuration: 4000, // 1s fade + 3s hold
 
     // Display
     snakeColor: '#00bcd4', // Cyan
@@ -216,6 +216,13 @@ function draw() {
     const gap = 2;
     const size = gs - gap;
 
+    // Draw Snake & Food (Fade OUT if Game Over)
+    ctx.save();
+    if (isGameOver) {
+        // Snake fades out as Logo fades in
+        ctx.globalAlpha = Math.max(0, 1 - logoOpacity);
+    }
+
     // Draw Snake
     ctx.shadowBlur = 15;
     ctx.shadowColor = CONFIG.snakeGlow;
@@ -253,6 +260,7 @@ function draw() {
     }
 
     ctx.shadowBlur = 0;
+    ctx.restore(); // Restore opacity for Logo
 
     // Draw Logo Overlay (Last = On Top)
     if (isGameOver) {
