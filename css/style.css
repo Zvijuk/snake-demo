@@ -183,6 +183,7 @@ canvas {
     opacity: 0 !important;
     transform: translateY(10px) !important;
 }
+
 /* Reveal Overlay */
 .overlay-center {
     position: absolute;
@@ -191,11 +192,11 @@ canvas {
     transform: translate(-50%, -50%);
     z-index: 100;
     pointer-events: none;
-    
+
     display: flex;
     justify-content: center;
     align-items: center;
-    
+
     opacity: 0;
     transition: opacity 0.5s ease;
 }
@@ -203,11 +204,12 @@ canvas {
 .reveal-text {
     font-size: 80px;
     font-weight: 800;
-    color: #00bcd4; /* Coinis Cyan */
+    color: #00bcd4;
+    /* Coinis Cyan */
     text-shadow: 0 0 30px rgba(0, 188, 212, 0.6), 0 0 60px rgba(0, 188, 212, 0.3);
     letter-spacing: 5px;
     text-transform: uppercase;
-    
+
     transform: scale(0.8);
     transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -227,12 +229,13 @@ canvas {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 200; /* Above everything */
+    z-index: 200;
+    /* Above everything */
     display: flex;
     justify-content: center;
     align-items: center;
     pointer-events: none;
-    
+
     opacity: 0;
     transition: opacity 1s ease;
 }
@@ -242,7 +245,8 @@ canvas {
 }
 
 .glass-panel-dark {
-    background: rgba(5, 11, 20, 0.85); /* Darker backdrop */
+    background: rgba(5, 11, 20, 0.85);
+    /* Darker backdrop */
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
 }
@@ -251,12 +255,12 @@ canvas {
     text-align: center;
     max-width: 800px;
     padding: 40px;
-    
+
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 20px;
-    
+
     transform: translateY(20px);
     transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -269,7 +273,8 @@ canvas {
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 3px;
-    color: #5c7c99; /* Muted Blue */
+    color: #5c7c99;
+    /* Muted Blue */
     margin-bottom: 10px;
 }
 
@@ -280,14 +285,15 @@ canvas {
     letter-spacing: 2px;
     margin: 0;
     text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-    
+
     /* Reveal Animation support? */
 }
 
 .divider-line {
     width: 80px;
     height: 4px;
-    background: #00bcd4; /* Cyan */
+    background: #00bcd4;
+    /* Cyan */
     border-radius: 2px;
     box-shadow: 0 0 15px rgba(0, 188, 212, 0.5);
 }
@@ -319,4 +325,122 @@ canvas {
     background: #00bcd4;
     box-shadow: 0 0 10px rgba(0, 188, 212, 0.6);
     transform: scale(1.2);
+}
+
+/* Gallery Slider Overlay */
+.gallery-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+}
+
+.gallery-wrapper {
+    width: 90%;
+    height: 80%;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    background: #000;
+}
+
+.gallery-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.5s ease;
+}
+
+/* Gallery Transitions */
+.gallery-wrapper {
+    position: relative;
+    /* Ensure images stack */
+}
+
+.gallery-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    /* We will override this for sliding */
+}
+
+/* Slide Animation Classes */
+.gallery-image.active {
+    opacity: 1;
+    z-index: 2;
+    transform: translateX(0);
+    transition: transform 0.8s ease-out, opacity 0.5s ease;
+}
+
+.gallery-image.slide-out {
+    opacity: 1;
+    z-index: 1;
+    transform: translateX(-100%);
+    /* Move Left */
+    transition: transform 0.8s ease-in, opacity 0.5s ease;
+}
+
+.gallery-image.slide-in {
+    opacity: 0;
+    z-index: 2;
+    transform: translateX(100%);
+    /* Start from Right */
+}
+
+/* Continuous Marquee Animation */
+.gallery-marquee-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    /* Mask edges for smooth fade? Optional */
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.gallery-track {
+    display: flex;
+    height: 100%;
+    /* Width will be dynamic or huge */
+    /* Animate this track */
+    animation: scroll-left 90s linear infinite;
+    /* 20s per cycle, adjust based on content width logic */
+}
+
+/* Adjust image styling for the strip */
+.gallery-track .gallery-image {
+    width: auto;
+    /* Allow natural aspect ratio? Or fixed width */
+    height: 100%;
+    position: relative;
+    /* Not absolute anymore */
+    opacity: 1;
+    /* Always visible */
+    margin-right: 20px;
+    /* Gap between images */
+    flex-shrink: 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes scroll-left {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+
+    /* Move by 50% because we will double the content */
 }
