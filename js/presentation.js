@@ -5,7 +5,7 @@
 
 const Presentation = {
     // Configuration
-    duration: 2 * 60 * 1000, // 2 Minutes Total
+    duration: 90 * 1000, // 1 Minute 30 Seconds Total
     slideDuration: 10000,    // 10 Seconds per slide
 
     values: [

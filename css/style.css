@@ -320,3 +320,70 @@ canvas {
     box-shadow: 0 0 10px rgba(0, 188, 212, 0.6);
     transform: scale(1.2);
 }
+
+/* Gallery Slider Overlay */
+.gallery-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+}
+
+.gallery-wrapper {
+    width: 90%;
+    height: 80%;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    background: #000;
+}
+
+.gallery-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.5s ease;
+}
+
+/* Gallery Transitions */
+.gallery-wrapper {
+    position: relative;
+    /* Ensure images stack */
+}
+
+.gallery-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.5s ease; 
+    /* We will override this for sliding */
+}
+
+/* Slide Animation Classes */
+.gallery-image.active {
+    opacity: 1;
+    z-index: 2;
+    transform: translateX(0);
+    transition: transform 0.8s ease-out, opacity 0.5s ease;
+}
+
+.gallery-image.slide-out {
+    opacity: 1;
+    z-index: 1;
+    transform: translateX(-100%); /* Move Left */
+    transition: transform 0.8s ease-in, opacity 0.5s ease;
+}
+
+.gallery-image.slide-in {
+    opacity: 0;
+    z-index: 2;
+    transform: translateX(100%); /* Start from Right */
+}

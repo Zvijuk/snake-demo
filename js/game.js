@@ -189,9 +189,11 @@ function finishDrawing() {
         revealOverlay.classList.add('fade-out');
     }
 
-    // Start Company Values Presentation instead of immediate reset
-    if (typeof Presentation !== 'undefined') {
-        Presentation.start(resetGame);
+    // Start Company Values Presentation, then Gallery, then Reset
+    if (typeof Presentation !== 'undefined' && typeof Gallery !== 'undefined') {
+        Presentation.start(() => {
+            Gallery.start(resetGame);
+        });
     } else {
         setTimeout(() => {
             resetGame();
