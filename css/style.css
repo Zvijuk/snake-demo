@@ -387,3 +387,42 @@ canvas {
     z-index: 2;
     transform: translateX(100%); /* Start from Right */
 }
+
+/* Continuous Marquee Animation */
+.gallery-marquee-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    /* Mask edges for smooth fade? Optional */
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.gallery-track {
+    display: flex;
+    height: 100%;
+    /* Width will be dynamic or huge */
+    /* Animate this track */
+    animation: scroll-left 20s linear infinite; 
+    /* 20s per cycle, adjust based on content width logic */
+}
+
+/* Adjust image styling for the strip */
+.gallery-track .gallery-image {
+    width: auto; /* Allow natural aspect ratio? Or fixed width */
+    height: 100%;
+    position: relative; /* Not absolute anymore */
+    opacity: 1; /* Always visible */
+    margin-right: 20px; /* Gap between images */
+    flex-shrink: 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+@keyframes scroll-left {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); } 
+    /* Move by 50% because we will double the content */
+}
