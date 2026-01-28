@@ -1,27 +1,26 @@
 /**
- * Coinis Snake Demo - Redesign
+ * Coinis Snake Demo - Logo Draw Mode
  * 100% Client-side, Vanilla JS
  */
 
 const CONFIG = {
     // Game Play
-    gridSize: 30, // Smaller grid for cleaner look on large screens
-    speed: 90,    // Slightly faster feel
+    gridSize: 30,
+    speed: 60, // Faster for drawing
 
     // Mechanics
-    softResetInterval: 10 * 60 * 1000,
+    softResetInterval: 10 * 60 * 1000, // 10 minutes
     restartDelay: 2500,
 
-    // Coinis Reveal Mode
-    targetLength: 20, // Length to trigger reveal
-    revealWord: "COINIS",
+    // Coinis Reveal / Draw Mode
+    targetLength: 9999, // Ignored in Draw Mode (length determind by path)
+    revealWord: "COINIS", // Text to show
     revealDuration: 3000,
 
     // Display
-    // We don't use a solid bg anymore, we clearRect
     snakeColor: '#00bcd4', // Cyan
     snakeGlow: 'rgba(0, 188, 212, 0.4)',
-    foodColor: '#ff4081',  // Pink/Magenta accent
+    foodColor: '#ff4081',
     foodGlow: 'rgba(255, 64, 129, 0.5)',
 
     // Demo Messages
@@ -49,11 +48,13 @@ const revealWordEl = document.getElementById('reveal-word');
 
 let cols, rows;
 let snake = [];
-let dir = { x: 1, y: 0 };
 let food = null;
 let score = 0;
-let isGameOver = false;
-let isRevealMode = false;
+let isGameOver = false; // "Dead" or "Finished" state
+
+// Draw Mode State
+let drawPath = [];
+let pathIndex = 0;
 
 // Timers
 let lastTime = 0;
@@ -66,7 +67,9 @@ function init() {
     window.addEventListener('resize', resize);
 
     // Soft Reset
-    setTimeout(() => window.location.reload(), CONFIG.softResetInterval);
+    if (CONFIG.softResetInterval) {
+        setTimeout(() => window.location.reload(), CONFIG.softResetInterval);
+    }
 
     // Overlays
     startClock();
@@ -77,48 +80,56 @@ function init() {
 }
 
 function resize() {
-    // Fit canvas to the wrapper provided by CSS
     const rect = wrapper.getBoundingClientRect();
-
-    // Make canvas logical size match visual size for sharpness
-    // (Could handle DPR here for 4K sharpness, but standard 1:1 is usually performant enough for signage)
     canvas.width = rect.width;
     canvas.height = rect.height;
 
     cols = Math.floor(canvas.width / CONFIG.gridSize);
     rows = Math.floor(canvas.height / CONFIG.gridSize);
-
-    // Clamp food/snake if resized
-    if (food) clampToGrid(food);
-}
-
-function clampToGrid(pos) {
-    if (pos.x >= cols) pos.x = cols - 1;
-    if (pos.y >= rows) pos.y = rows - 1;
 }
 
 function resetGame() {
     isGameOver = false;
-    isRevealMode = false;
     score = 0;
     updateScore();
+    pathIndex = 0;
 
-    // Hide reveal just in case
+    // Hide reveal
     if (revealOverlay) {
         revealOverlay.classList.remove('active');
         revealOverlay.classList.add('fade-out');
     }
 
-    const startX = Math.floor(cols / 2);
-    const startY = Math.floor(rows / 2);
-    snake = [
-        { x: startX, y: startY },
-        { x: startX - 1, y: startY },
-        { x: startX - 2, y: startY },
-        { x: startX - 3, y: startY }
-    ];
-    dir = { x: 1, y: 0 };
-    spawnFood();
+    // Generate Path (Centered)
+    if (typeof PATHS !== 'undefined') {
+        drawPath = PATHS.getHardcodedCoinis();
+    } else {
+        // Fallback simple line
+        drawPath = [{ x: 10, y: 10 }, { x: 11, y: 10 }, { x: 12, y: 10 }];
+    }
+
+    // Center the path
+    const pathMinX = 2; const pathMaxX = 28;
+    const pathMinY = 10; const pathMaxY = 18;
+    const pWidth = pathMaxX - pathMinX;
+    const pHeight = pathMaxY - pathMinY;
+
+    const offsetX = Math.floor((cols - pWidth) / 2) - pathMinX;
+    const offsetY = Math.floor((rows - pHeight) / 2) - pathMinY;
+
+    drawPath = drawPath.map(p => ({
+        x: p.x + offsetX,
+        y: p.y + offsetY
+    }));
+
+    // Init Snake at Start of Path
+    if (drawPath.length > 0) {
+        snake = [drawPath[0]];
+        pathIndex = 0;
+        spawnFood();
+    } else {
+        snake = [{ x: 5, y: 5 }];
+    }
 }
 
 function loop(timestamp) {
@@ -126,8 +137,7 @@ function loop(timestamp) {
     const deltaTime = timestamp - lastTime;
     lastTime = timestamp;
 
-    // Only update if Playing (Not Dead AND Not Revealing)
-    if (!isGameOver && !isRevealMode) {
+    if (!isGameOver) {
         accumulator += deltaTime;
         if (accumulator >= CONFIG.speed) {
             update();
@@ -135,118 +145,63 @@ function loop(timestamp) {
         }
     }
 
-    draw(); // Draw every frame for smooth animations (pulse)
+    draw();
     pulseFrame += 0.05;
 
-    if (isGameOver) {
-        // Stop updating but keep drawing dead state? 
-        // Actually we auto-restart.
-    }
-
-    if (!isGameOver || (isGameOver && deltaTime < CONFIG.restartDelay)) {
-        requestAnimationFrame(loop);
-    }
-}
-
-// AI Logic (Same as before)
-function determineMove() {
-    const head = snake[0];
-    const dx = food.x - head.x;
-    const dy = food.y - head.y;
-
-    let preferredMoves = [];
-    if (dx > 0) preferredMoves.push({ x: 1, y: 0 });
-    else if (dx < 0) preferredMoves.push({ x: -1, y: 0 });
-    if (dy > 0) preferredMoves.push({ x: 0, y: 1 });
-    else if (dy < 0) preferredMoves.push({ x: 0, y: -1 });
-
-    for (let move of preferredMoves) if (isValidMove(move)) return move;
-
-    const allMoves = [{ x: 0, y: -1 }, { x: 0, y: 1 }, { x: -1, y: 0 }, { x: 1, y: 0 }];
-    for (let move of allMoves) if (isValidMove(move)) return move;
-
-    return dir;
-}
-
-function isValidMove(move) {
-    if (move.x === -dir.x && move.y === -dir.y) return false;
-    const targetX = snake[0].x + move.x;
-    const targetY = snake[0].y + move.y;
-
-    if (targetX < 0 || targetX >= cols || targetY < 0 || targetY >= rows) return false;
-    for (let i = 0; i < snake.length - 1; i++) {
-        if (targetX === snake[i].x && targetY === snake[i].y) return false;
-    }
-    return true;
+    requestAnimationFrame(loop);
 }
 
 function update() {
-    const nextMove = determineMove();
-    if (nextMove) dir = nextMove;
-
-    const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
-
-    // Collision
-    if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows || isSnake(head.x, head.y)) {
-        isGameOver = true;
-        setTimeout(() => {
-            resetGame();
-            requestAnimationFrame(loop);
-        }, CONFIG.restartDelay);
+    // Are we done?
+    if (pathIndex >= drawPath.length - 1) {
+        finishDrawing();
         return;
     }
 
-    snake.unshift(head);
+    // Next point
+    const nextPos = drawPath[pathIndex + 1];
 
-    // Check Food
-    if (head.x === food.x && head.y === food.y) {
-        score++; // Score tracks food eaten
+    // Move Head
+    snake.unshift(nextPos);
+
+    // Check Food & Grow (Always grow in Draw Mode)
+    if (food && nextPos.x === food.x && nextPos.y === food.y) {
+        score++;
         updateScore();
-
-        // Check Win Condition (Target Length)
-        // Snake length is now score + initial_length (4). 
-        // Simplest to check current array length.
-        if (snake.length >= CONFIG.targetLength) {
-            triggerReveal();
-        } else {
-            spawnFood();
-        }
+        pathIndex++;
+        spawnFood();
     } else {
-        snake.pop();
+        // If we missed food (shouldn't happen with correct spawn), catch up logic
+        score++;
+        updateScore();
+        pathIndex++;
+        spawnFood();
     }
 }
 
-function triggerReveal() {
-    isRevealMode = true;
+function finishDrawing() {
+    isGameOver = true;
 
-    // Update Reveal Text (in case config changed)
-    if (revealWordEl) revealWordEl.innerText = CONFIG.revealWord;
-
-    // Show Overlay
     if (revealOverlay) {
+        revealWordEl.innerText = CONFIG.revealWord;
         revealOverlay.classList.remove('fade-out');
         revealOverlay.classList.add('active');
-
-        // Wait then Reset
-        setTimeout(() => {
-            revealOverlay.classList.remove('active');
-            revealOverlay.classList.add('fade-out');
-            resetGame();
-        }, CONFIG.revealDuration);
-    } else {
-        // Fallback if overlay missing
-        resetGame();
     }
+
+    setTimeout(() => {
+        resetGame();
+    }, CONFIG.revealDuration);
 }
 
-function isSnake(x, y) {
-    for (let p of snake) if (p.x === x && p.y === y) return true;
-    return false;
+function spawnFood() {
+    if (pathIndex + 1 < drawPath.length) {
+        food = drawPath[pathIndex + 1];
+    } else {
+        food = null;
+    }
 }
 
 function draw() {
-    // Clear logic for Glass:
-    // We actually want a fully transparent canvas to let the glass BG show through.
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const gs = CONFIG.gridSize;
@@ -262,16 +217,15 @@ function draw() {
         const x = snake[i].x * gs + gap / 2;
         const y = snake[i].y * gs + gap / 2;
 
-        // Head different style? slightly
         if (i === 0) {
             ctx.shadowBlur = 20;
-            ctx.fillStyle = '#4dd0e1'; // Brighter cyan
+            ctx.fillStyle = '#4dd0e1';
         } else {
             ctx.shadowBlur = 10;
             ctx.fillStyle = CONFIG.snakeColor;
         }
 
-        roundedRect(ctx, x, y, size, size, 6);
+        roundedRect(ctx, x, y, size, size, 4);
     }
 
     // Draw Food
@@ -279,7 +233,6 @@ function draw() {
         const fx = food.x * gs + gs / 2;
         const fy = food.y * gs + gs / 2;
         const baseRadius = size / 2.5;
-        // Pulse effect
         const pulse = Math.sin(pulseFrame) * 2;
 
         ctx.shadowBlur = 20;
@@ -291,7 +244,6 @@ function draw() {
         ctx.fill();
     }
 
-    // Reset shadow for next frame transparency
     ctx.shadowBlur = 0;
 }
 
@@ -308,18 +260,6 @@ function roundedRect(ctx, x, y, width, height, radius) {
     ctx.quadraticCurveTo(x, y, x + radius, y);
     ctx.closePath();
     ctx.fill();
-}
-
-function spawnFood() {
-    let valid = false;
-    while (!valid) {
-        const x = Math.floor(Math.random() * cols);
-        const y = Math.floor(Math.random() * rows);
-        if (!isSnake(x, y)) {
-            food = { x, y };
-            valid = true;
-        }
-    }
 }
 
 function updateScore() {
