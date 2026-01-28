@@ -23,16 +23,8 @@ const CONFIG = {
     foodColor: '#ff4081',
     foodGlow: 'rgba(255, 64, 129, 0.5)',
 
-    // Demo Messages
-    demoMsgInterval: 30000,
-    demoMsgDuration: 6000,
-    messages: [
-        "COINIS IT • Building innovative solutions",
-        "UniFi Access • Seamless security integration",
-        "Automation • Streamlining complex workflows",
-        "Data Analytics • Real-time insights",
-        "Infrastructure • Scalable & resilient"
-    ]
+    foodGlow: 'rgba(255, 64, 129, 0.5)',
+
 };
 
 // Globals
@@ -41,8 +33,6 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreEl = document.getElementById('score-val');
 const clockEl = document.getElementById('clock');
-const msgContainer = document.getElementById('demo-message-container');
-const msgText = document.getElementById('demo-message-text');
 const revealOverlay = document.getElementById('overlay-reveal');
 const revealWordEl = document.getElementById('reveal-word');
 
@@ -59,7 +49,6 @@ let pathIndex = 0;
 // Timers
 let lastTime = 0;
 let accumulator = 0;
-let currentMsgIndex = 0;
 let pulseFrame = 0;
 
 function init() {
@@ -73,7 +62,7 @@ function init() {
 
     // Overlays
     startClock();
-    startDemoMessages();
+
 
     resetGame();
     requestAnimationFrame(loop);
@@ -327,85 +316,6 @@ function startClock() {
     setInterval(tick, 1000);
 }
 
-// Live Data Fetcher
-async function fetchIndustryData() {
-    // Backup: Manually curated from TLDR Tech (Verified)
-    const backupNews = [
-        "NEWS • Apple's AirTag 2 is easier to find thanks to new chip (TLDR)",
-        "NEWS • Microsoft introduces newest in-house AI chip",
-        "NEWS • ChatGPT's lead shrinks as Gemini surges in AI traffic war",
-        "NEWS • Tesla launches public Robotaxi rides in Austin",
-        "NEWS • Apple will reportedly unveil Gemini-powered Siri in Feb"
-    ];
 
-    const feeds = [
-        // TechCrunch (Reliable Tech News)
-        'https://techcrunch.com/feed/',
-        // The Verge
-        'https://www.theverge.com/rss/index.xml',
-        // Hacker News (Top)
-        'https://hnrss.org/newest?points=100'
-    ];
-
-    let success = false;
-
-    // Try feeds sequentially
-    for (let rss of feeds) {
-        try {
-            const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss)}`;
-            const response = await fetch(API_URL);
-            if (!response.ok) throw new Error('API Error');
-
-            const data = await response.json();
-
-            if (data && data.items && data.items.length > 0) {
-                // Limit to 5 headlines to keep loop tight
-                const headlines = data.items.slice(0, 5).map(item => `NEWS • ${item.title}`);
-
-                CONFIG.messages = [
-                    "COINIS • Connecting advertisers & publishers",
-                    ...headlines
-                ];
-                console.log("Live data updated from:", rss);
-                success = true;
-                break; // Stop if one works
-            }
-        } catch (e) {
-            console.warn(`Feed failed: ${rss}`, e);
-        }
-    }
-
-    // If all failed, use Backup "TLDR Tech" Data
-    if (!success) {
-        console.warn("All feeds failed. Using simulated TLDR data.");
-        CONFIG.messages = [
-            "COINIS • Connecting advertisers & publishers",
-            ...backupNews
-        ];
-    }
-}
-
-function startDemoMessages() {
-    // Initial Fetch
-    fetchIndustryData();
-
-    // Refresh every hour
-    setInterval(fetchIndustryData, 60 * 60 * 1000);
-
-    function cycle() {
-        msgText.innerText = CONFIG.messages[currentMsgIndex];
-        msgContainer.classList.remove('fade-out');
-        msgContainer.classList.add('fade-in');
-
-        setTimeout(() => {
-            msgContainer.classList.remove('fade-in');
-            msgContainer.classList.add('fade-out');
-        }, CONFIG.demoMsgDuration);
-
-        currentMsgIndex = (currentMsgIndex + 1) % CONFIG.messages.length;
-    }
-    setTimeout(cycle, 2000);
-    setInterval(cycle, CONFIG.demoMsgInterval);
-}
 
 window.onload = init;
